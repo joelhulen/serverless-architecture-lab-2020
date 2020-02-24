@@ -36,17 +36,25 @@ namespace TollBooth
             var collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
             List<LicensePlateDataDocument> licensePlates;
 
-            using (_client = new DocumentClient(new Uri(_endpointUrl), _authorizationKey))
+            try
             {
-                // MaxItemCount value tells the document query to retrieve 100 documents at a time until all are returned.
-                // TODO 5: Retrieve a List of LicensePlateDataDocument objects from the collectionLink where the exported value is false.
-                // COMPLETE: licensePlates = _client.CreateDocumentQuery ...
-                // TODO 6: Remove the line below.
-                //licensePlates = new List<LicensePlateDataDocument>();
-                licensePlates = _client.CreateDocumentQuery<LicensePlateDataDocument>(collectionLink,
-                        new FeedOptions() { EnableCrossPartitionQuery = true, MaxItemCount = 100 })
-                    .Where(l => l.exported == false)
-                    .ToList();
+                using (_client = new DocumentClient(new Uri(_endpointUrl), _authorizationKey))
+                {
+                    // MaxItemCount value tells the document query to retrieve 100 documents at a time until all are returned.
+                    // TODO 5: Retrieve a List of LicensePlateDataDocument objects from the collectionLink where the exported value is false.
+                    // COMPLETE: licensePlates = _client.CreateDocumentQuery ...
+                    // TODO 6: Remove the line below.
+                    //licensePlates = new List<LicensePlateDataDocument>();
+                    licensePlates = _client.CreateDocumentQuery<LicensePlateDataDocument>(collectionLink,
+                            new FeedOptions() { EnableCrossPartitionQuery = true, MaxItemCount = 100 })
+                        .Where(l => l.exported == false)
+                        .ToList();
+                }
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"An exception occurred while querying Cosmos DB: {e.Message}");
+                throw;
             }
 
             exportedCount = licensePlates.Count();
