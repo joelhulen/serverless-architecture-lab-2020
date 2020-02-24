@@ -36,31 +36,21 @@ namespace TollBooth
             var collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
             List<LicensePlateDataDocument> licensePlates;
 
-            _log.LogInformation($"Database: {_databaseId}\nCollection: {_collectionId}\nEndpoint: {_endpointUrl}");
-
-            try
+            using (_client = new DocumentClient(new Uri(_endpointUrl), _authorizationKey))
             {
-                using (_client = new DocumentClient(new Uri(_endpointUrl), _authorizationKey))
-                {
-                    // MaxItemCount value tells the document query to retrieve 100 documents at a time until all are returned.
-                    // TODO 5: Retrieve a List of LicensePlateDataDocument objects from the collectionLink where the exported value is false.
-                    // COMPLETE: licensePlates = _client.CreateDocumentQuery ...
-                    // TODO 6: Remove the line below.
-                    //licensePlates = new List<LicensePlateDataDocument>();
-                    licensePlates = _client.CreateDocumentQuery<LicensePlateDataDocument>(collectionLink,
-                            new FeedOptions() { EnableCrossPartitionQuery = true, MaxItemCount = 100 })
-                        .Where(l => l.exported == false)
-                        .ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"An exception occurred while querying Cosmos DB: {e.Message}");
-                throw;
+                // MaxItemCount value tells the document query to retrieve 100 documents at a time until all are returned.
+                // TODO 5: Retrieve a List of LicensePlateDataDocument objects from the collectionLink where the exported value is false.
+                // COMPLETE: licensePlates = _client.CreateDocumentQuery ...
+                // TODO 6: Remove the line below.
+                //licensePlates = new List<LicensePlateDataDocument>();
+                licensePlates = _client.CreateDocumentQuery<LicensePlateDataDocument>(collectionLink,
+                        new FeedOptions() { EnableCrossPartitionQuery = true, MaxItemCount = 100 })
+                    .Where(l => l.exported == false)
+                    .ToList();
             }
 
             exportedCount = licensePlates.Count();
-            _log.LogInformation($"{exportedCount} doggone license plates found that are ready for export");
+            _log.LogInformation($"{exportedCount} license plates found that are ready for export");
             return licensePlates;
         }
 
